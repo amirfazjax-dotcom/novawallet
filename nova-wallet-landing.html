@@ -103,28 +103,46 @@ button{ font-family:inherit; border:none; background:none; color:inherit; cursor
 }
 .hero-badge .dot{ width:6px; height:6px; border-radius:50%; background:var(--cyan); box-shadow:0 0 8px var(--cyan); flex-shrink:0; }
 
-/* ---- coin row / signature element (simple, contained, never overlaps) ---- */
-.coin-row{
+/* ---- orbit hub / signature element ---- */
+/* Fully percentage-based (no fixed px offsets) so it scales cleanly at any
+   Telegram viewport width without the coins drifting outside the hub. */
+.orbit-hub{
   position:relative; z-index:1;
-  display:flex;
-  justify-content:center;
-  align-items:flex-end;
-  gap: clamp(14px, 5vw, 22px);
-  margin: clamp(22px, 7vw, 34px) 0 6px;
+  width: clamp(200px, 62vw, 264px);
+  aspect-ratio: 1 / 1;
+  margin: clamp(20px, 6vw, 32px) auto 4px;
 }
-.coin-badge{
-  width: clamp(52px, 15vw, 64px);
-  height: clamp(52px, 15vw, 64px);
+.orbit-ring{ position:absolute; inset:0; width:100%; height:100%; }
+
+.orbit-hub-core{
+  position:absolute; top:50%; left:50%;
+  width:34%; aspect-ratio:1/1;
+  transform:translate(-50%,-50%);
   border-radius:50%;
+  background: radial-gradient(circle at 32% 28%, #1c3768, #0c1730 68%);
+  border:1px solid rgba(120,160,255,0.35);
+  box-shadow: 0 0 40px rgba(76,217,255,0.22), inset 0 0 18px rgba(76,217,255,0.12);
+  display:flex; align-items:center; justify-content:center;
+}
+.orbit-hub-core svg{ width:48%; height:48%; }
+
+/* each slot only handles POSITION (in %), each float handles the animation —
+   keeping these separate avoids the transform conflicts that broke this earlier */
+.coin-slot{ position:absolute; }
+.coin-slot.c-gram{ top:0%; left:50%; width:26%; aspect-ratio:1/1; transform:translate(-50%,-8%); }
+.coin-slot.c-btc{ bottom:2%; left:-2%; width:32%; aspect-ratio:1/1; }
+.coin-slot.c-eth{ bottom:2%; right:-2%; width:24%; aspect-ratio:1/1; }
+
+.coin-float{ width:100%; height:100%; animation: floatY 4.6s ease-in-out infinite; }
+.coin-slot.c-btc .coin-float{ animation-delay:.4s; }
+.coin-slot.c-eth .coin-float{ animation-delay:.8s; }
+@keyframes floatY{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-8%); } }
+
+.coin-badge{
+  width:100%; height:100%; border-radius:50%;
   box-shadow: 0 8px 18px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.08);
-  animation: floatY 4.6s ease-in-out infinite;
-  flex-shrink:0;
 }
 .coin-badge svg{ width:100%; height:100%; display:block; }
-.coin-badge.b-gram{ animation-delay:0s; }
-.coin-badge.b-btc{ width: clamp(64px, 18vw, 78px); height: clamp(64px, 18vw, 78px); animation-delay:.4s; z-index:1; }
-.coin-badge.b-eth{ animation-delay:.8s; }
-@keyframes floatY{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-8px); } }
 
 /* ---- headline ---- */
 .hero-text{ position:relative; z-index:1; text-align:center; margin-top:8px; }
@@ -197,7 +215,7 @@ button{ font-family:inherit; border:none; background:none; color:inherit; cursor
 .pop-d7{ animation-delay:.58s; } .pop-d8{ animation-delay:.66s; }
 
 @media (prefers-reduced-motion: reduce){
-  .orbit-spin, .orbit-spin-rev, .pulse-node, .coin-badge{ animation:none !important; }
+  .orbit-spin, .orbit-spin-rev, .pulse-node, .coin-float{ animation:none !important; }
   .pop{ animation:none !important; opacity:1; transform:none; }
 }
 </style>
@@ -287,11 +305,18 @@ button{ font-family:inherit; border:none; background:none; color:inherit; cursor
 
     <div class="hero-badge pop pop-d2"><span class="dot"></span> One wallet, every chain</div>
 
-    <!-- signature coin row with real crypto marks — simple flex row, cannot overlap other content -->
-    <div class="coin-row pop pop-d3">
-      <div class="coin-badge b-gram"><svg viewBox="0 0 56 56"><use href="#logo-gram"/></svg></div>
-      <div class="coin-badge b-btc"><svg viewBox="0 0 64 64"><use href="#logo-btc"/></svg></div>
-      <div class="coin-badge b-eth"><svg viewBox="0 0 64 64"><use href="#logo-eth"/></svg></div>
+    <!-- signature orbit hub: animated Nova mark in the center, real crypto logos arranged around it -->
+    <div class="orbit-hub pop pop-d3">
+      <svg class="orbit-ring" viewBox="0 0 232 232">
+        <circle cx="116" cy="116" r="109" fill="none" stroke="rgba(140,175,255,0.14)" stroke-width="1" stroke-dasharray="2 6"/>
+        <circle cx="116" cy="116" r="79" fill="none" stroke="rgba(140,175,255,0.12)" stroke-width="1" stroke-dasharray="2 6"/>
+      </svg>
+
+      <div class="orbit-hub-core"><svg viewBox="0 0 100 100"><use href="#logo-orbit"/></svg></div>
+
+      <div class="coin-slot c-gram"><div class="coin-float"><div class="coin-badge"><svg viewBox="0 0 56 56"><use href="#logo-gram"/></svg></div></div></div>
+      <div class="coin-slot c-btc"><div class="coin-float"><div class="coin-badge"><svg viewBox="0 0 64 64"><use href="#logo-btc"/></svg></div></div></div>
+      <div class="coin-slot c-eth"><div class="coin-float"><div class="coin-badge"><svg viewBox="0 0 64 64"><use href="#logo-eth"/></svg></div></div></div>
     </div>
 
     <div class="hero-text pop pop-d4">
