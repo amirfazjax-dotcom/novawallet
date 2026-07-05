@@ -2,73 +2,64 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Nova Wallet</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
 <style>
 /* ============ TOKENS ============ */
 :root{
   --bg: #05070d;
   --bg-radial-1: #0a1530;
-  --bg-radial-2: #060814;
   --surface: rgba(255,255,255,0.03);
   --hairline: rgba(160,190,255,0.09);
   --hairline-strong: rgba(160,190,255,0.18);
-  --blue: #2f7cff;
   --cyan: #4cd9ff;
   --violet: #6c63ff;
   --text-1: #f2f6ff;
   --text-2: #8ea0c7;
   --text-3: #5b6c8f;
-  --shadow-lg: 0 24px 60px rgba(3,8,20,0.55);
   --font-display: 'Space Grotesk', 'Inter', sans-serif;
   --font-body: 'Inter', sans-serif;
 }
 
 *{ box-sizing: border-box; margin:0; padding:0; -webkit-tap-highlight-color: transparent; }
-html,body{ height:100%; }
+html{ height:100%; }
 body{
   font-family: var(--font-body);
   background:
     radial-gradient(circle at 18% -10%, var(--bg-radial-1) 0%, transparent 55%),
-    radial-gradient(circle at 85% 110%, #0b1a3a 0%, transparent 50%),
+    radial-gradient(circle at 85% 100%, #0b1a3a 0%, transparent 50%),
     var(--bg);
   color: var(--text-1);
-  min-height:100vh;
-  display:flex;
-  align-items:flex-start;
-  justify-content:center;
-  padding: 28px 16px;
+  min-height: 100vh;
+  min-height: 100dvh;
+  width: 100%;
+  overflow-x: hidden;
 }
 button{ font-family:inherit; border:none; background:none; color:inherit; cursor:pointer; }
 
-/* ============ DEVICE FRAME ============ */
-.device{ width: 400px; max-width: 100%; position: relative; }
-.app-shell{
+/* ============ APP ROOT (fills whatever Telegram gives us — no fake phone frame) ============ */
+#appRoot{
   position:relative;
+  min-height: 100vh;
+  min-height: 100dvh;
   width:100%;
-  height: 844px;
-  max-height: 92vh;
-  background: linear-gradient(180deg, #0a1226 0%, #05070d 100%);
-  border-radius: 44px;
-  border: 1px solid rgba(150,180,255,0.14);
-  box-shadow: var(--shadow-lg), inset 0 0 0 1px rgba(0,0,0,0.4);
-  overflow: hidden;
   display:flex;
   flex-direction:column;
 }
 
 /* ============ SPLASH ============ */
 #splash{
-  position:absolute; inset:0; z-index:50;
+  position:fixed; inset:0; z-index:50;
   display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px;
   background: radial-gradient(circle at 50% 40%, #0d1a38 0%, #05070d 70%);
   transition: opacity .5s ease, visibility .5s ease;
 }
 #splash.hide{ opacity:0; visibility:hidden; pointer-events:none; }
-#splash .logo-mark{ width:78px; height:78px; }
+#splash .logo-mark{ width:72px; height:72px; }
 #splash .brand{ font-family:var(--font-display); font-weight:700; font-size:21px; letter-spacing:0.01em; }
 #splash .brand span{ color: var(--cyan); }
 #splash .tag{ font-size:11.5px; color:var(--text-3); letter-spacing:0.08em; text-transform:uppercase; }
@@ -83,23 +74,20 @@ button{ font-family:inherit; border:none; background:none; color:inherit; cursor
 .landing{
   position:relative;
   flex:1;
-  overflow-y:auto;
-  scrollbar-width:none;
-  padding: 30px 24px 34px;
+  padding: max(18px, env(safe-area-inset-top)) 20px calc(24px + env(safe-area-inset-bottom));
   display:flex;
   flex-direction:column;
 }
-.landing::-webkit-scrollbar{ display:none; }
 
-.landing-bg{ position:absolute; inset:0; z-index:0; pointer-events:none; }
+.landing-bg{ position:fixed; inset:0; z-index:-1; pointer-events:none; }
 
 .brand-row{
   position:relative; z-index:1;
   display:flex; align-items:center; gap:9px;
   margin-bottom: 6px;
 }
-.brand-row .logo-mark{ width:26px; height:26px; }
-.brand-row .name{ font-family:var(--font-display); font-weight:700; font-size:14.5px; letter-spacing:0.01em; }
+.brand-row .logo-mark{ width:24px; height:24px; flex-shrink:0; }
+.brand-row .name{ font-family:var(--font-display); font-weight:700; font-size:14px; letter-spacing:0.01em; }
 .brand-row .name span{ color:var(--cyan); }
 
 .hero-badge{
@@ -110,49 +98,39 @@ button{ font-family:inherit; border:none; background:none; color:inherit; cursor
   background: var(--surface);
   border:1px solid var(--hairline-strong);
   padding:6px 12px 6px 10px; border-radius:100px;
-  margin-top: 22px;
+  margin-top: 18px;
+  max-width:100%;
 }
-.hero-badge .dot{ width:6px; height:6px; border-radius:50%; background:var(--cyan); box-shadow:0 0 8px var(--cyan); }
+.hero-badge .dot{ width:6px; height:6px; border-radius:50%; background:var(--cyan); box-shadow:0 0 8px var(--cyan); flex-shrink:0; }
 
-/* ---- orbit hub / signature element ---- */
-.orbit-hub{
+/* ---- coin row / signature element (simple, contained, never overlaps) ---- */
+.coin-row{
   position:relative; z-index:1;
-  width: 232px; height: 232px;
-  margin: 30px auto 8px;
+  display:flex;
+  justify-content:center;
+  align-items:flex-end;
+  gap: clamp(14px, 5vw, 22px);
+  margin: clamp(22px, 7vw, 34px) 0 6px;
 }
-.orbit-ring{ position:absolute; inset:0; }
-.orbit-hub-core{
-  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-  width:78px; height:78px; border-radius:50%;
-  background: radial-gradient(circle at 32% 28%, #1c3768, #0c1730 68%);
-  border:1px solid rgba(120,160,255,0.35);
-  box-shadow: 0 0 40px rgba(76,217,255,0.22), inset 0 0 18px rgba(76,217,255,0.12);
-  display:flex; align-items:center; justify-content:center;
-}
-.orbit-hub-core svg{ width:38px; height:38px; }
-
-.coin-slot{
-  position:absolute;
-  width:52px; height:52px;
+.coin-badge{
+  width: clamp(52px, 15vw, 64px);
+  height: clamp(52px, 15vw, 64px);
+  border-radius:50%;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.08);
   animation: floatY 4.6s ease-in-out infinite;
+  flex-shrink:0;
 }
-.coin-slot.c-ton{ top:-8px; left:50%; margin-left:-26px; }
-.coin-slot.c-btc{ bottom:14px; left:-6px; animation-delay:.5s; }
-.coin-slot.c-eth{ bottom:14px; right:-6px; animation-delay:1s; }
+.coin-badge svg{ width:100%; height:100%; display:block; }
+.coin-badge.b-gram{ animation-delay:0s; }
+.coin-badge.b-btc{ width: clamp(64px, 18vw, 78px); height: clamp(64px, 18vw, 78px); animation-delay:.4s; z-index:1; }
+.coin-badge.b-eth{ animation-delay:.8s; }
 @keyframes floatY{ 0%,100%{ transform:translateY(0); } 50%{ transform:translateY(-8px); } }
 
-.coin{
-  width:100%; height:100%; border-radius:50%;
-  display:flex; align-items:center; justify-content:center;
-  box-shadow: 0 8px 18px rgba(0,0,0,0.4), inset 0 0 0 1px rgba(255,255,255,0.08);
-}
-.coin svg{ width:100%; height:100%; display:block; }
-
 /* ---- headline ---- */
-.hero-text{ position:relative; z-index:1; text-align:center; margin-top:14px; }
+.hero-text{ position:relative; z-index:1; text-align:center; margin-top:8px; }
 .hero-text h1{
   font-family:var(--font-display); font-weight:700;
-  font-size:29px; line-height:1.15; letter-spacing:-0.01em;
+  font-size: clamp(24px, 7vw, 29px); line-height:1.15; letter-spacing:-0.01em;
 }
 .hero-text h1 span{
   background: linear-gradient(100deg, var(--cyan), var(--violet));
@@ -160,7 +138,7 @@ button{ font-family:inherit; border:none; background:none; color:inherit; cursor
 }
 .hero-text .tagline{
   margin-top:10px; font-size:14px; line-height:1.55; color:var(--text-2);
-  max-width: 300px; margin-left:auto; margin-right:auto;
+  max-width: 320px; margin-left:auto; margin-right:auto;
 }
 
 /* ---- feature list ---- */
@@ -202,11 +180,12 @@ button{ font-family:inherit; border:none; background:none; color:inherit; cursor
 
 /* ---- toast ---- */
 .toast{
-  position:absolute; left:50%; bottom:26px; transform:translateX(-50%) translateY(20px);
+  position:fixed; left:50%; bottom: calc(24px + env(safe-area-inset-bottom)); transform:translateX(-50%) translateY(20px);
   background:#101d38; border:1px solid var(--hairline-strong);
   padding:10px 16px; border-radius:12px; font-size:12.5px; color:var(--text-1);
   opacity:0; pointer-events:none; transition: opacity .25s ease, transform .25s ease;
   white-space:nowrap; z-index:40; box-shadow:0 10px 24px rgba(0,0,0,0.4);
+  max-width: calc(100% - 32px);
 }
 .toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
 
@@ -218,7 +197,7 @@ button{ font-family:inherit; border:none; background:none; color:inherit; cursor
 .pop-d7{ animation-delay:.58s; } .pop-d8{ animation-delay:.66s; }
 
 @media (prefers-reduced-motion: reduce){
-  .orbit-spin, .orbit-spin-rev, .pulse-node, .coin-slot{ animation:none !important; }
+  .orbit-spin, .orbit-spin-rev, .pulse-node, .coin-badge{ animation:none !important; }
   .pop{ animation:none !important; opacity:1; transform:none; }
 }
 </style>
@@ -249,19 +228,21 @@ button{ font-family:inherit; border:none; background:none; color:inherit; cursor
   <g id="ico-send"><path d="M22 2 11 13M22 2 15 22l-4-9-9-4 20-7Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></g>
   <g id="ico-wallet"><path d="M3 7a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2v3H5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M3 7v11a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1H6a2 2 0 0 1-2-2Z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="16.5" cy="14" r="1.4" fill="currentColor"/></g>
 
-  <!-- Real TON logomark (official brand shape) -->
-  <g id="logo-ton" viewBox="0 0 56 56">
+  <!-- Gram (the coin — rebranded from Toncoin in June 2026) logomark: blue circle, white diamond -->
+  <g id="logo-gram" viewBox="0 0 56 56">
     <circle cx="28" cy="28" r="28" fill="#0098EA"/>
     <path d="M37.5603 15.6277H18.4386C14.9228 15.6277 12.6944 19.4202 14.4632 22.4861L26.2644 42.9409C27.0345 44.2765 28.9644 44.2765 29.7345 42.9409L41.5381 22.4861C43.3045 19.4251 41.0761 15.6277 37.5627 15.6277H37.5603ZM26.2548 36.8068L23.6847 31.8327L17.4833 20.7414C17.0742 20.0315 17.5795 19.1218 18.4362 19.1218H26.2524V36.8092L26.2548 36.8068ZM38.5108 20.739L32.3118 31.8351L29.7417 36.8068V19.1194H37.5579C38.4146 19.1194 38.9199 20.0291 38.5108 20.739Z" fill="#fff"/>
   </g>
 
-  <!-- Real Bitcoin logomark (official brand shape) -->
+  <!-- Bitcoin logomark -->
   <g id="logo-btc" viewBox="0 0 64 64">
     <circle cx="32" cy="32" r="32" fill="#F7931A"/>
-    <path fill="#fff" d="M43.7 27.2c.6-4-2.5-6.2-6.6-7.6l1.4-5.4-3.3-.8-1.3 5.2c-.9-.2-1.8-.4-2.7-.6l1.3-5.3-3.3-.8-1.4 5.4c-.7-.2-1.5-.3-2.2-.5l-4.5-1.1-.9 3.5s2.4.6 2.4.6c1.3.3 1.6 1.2 1.5 1.9l-1.5 6.1.1.1v.4l-2.1 8.6c-.2.4-.6 1-1.5.8 0 .1-2.4-.6-2.4-.6l-1.6 3.8 4.3 1.1c.8.2 1.6.4 2.3.6l-1.4 5.5 3.3.8 1.4-5.4c.9.3 1.8.5 2.7.7l-1.4 5.3 3.3.8 1.4-5.5c5.6 1.1 9.9.6 11.6-4.4 1.4-4-.1-6.3-3-7.8 2.1-.5 3.7-1.9 4.1-4.7zM36.9 35.7c-1 4-7.9 1.9-10.2 1.3l1.8-7.2c2.2.6 9.4 1.7 8.4 5.9zm1-6.3c-.9 3.6-6.7 1.8-8.5 1.4l1.6-6.5c1.9.5 7.8 1.4 6.9 5.1z"/>
+    <g transform="translate(15,15) scale(2.05)">
+      <path fill="#fff" d="M5.5 13v1.25c0 .138.112.25.25.25h1a.25.25 0 0 0 .25-.25V13h.5v1.25c0 .138.112.25.25.25h1a.25.25 0 0 0 .25-.25V13h.084c1.992 0 3.416-1.033 3.416-2.82 0-1.502-1.007-2.323-2.186-2.44v-.088c.97-.242 1.683-.974 1.683-2.19C11.997 3.93 10.847 3 9.092 3H9V1.75a.25.25 0 0 0-.25-.25h-1a.25.25 0 0 0-.25.25V3h-.573V1.75a.25.25 0 0 0-.25-.25H5.75a.25.25 0 0 0-.25.25V3l-1.998.011a.25.25 0 0 0-.25.25v.989c0 .137.11.25.248.25l.755-.005a.75.75 0 0 1 .745.75v5.505a.75.75 0 0 1-.75.75l-.748.011a.25.25 0 0 0-.25.25v1c0 .138.112.25.25.25zm1.427-8.513h1.719c.906 0 1.438.498 1.438 1.312 0 .871-.575 1.362-1.877 1.362h-1.28zm0 4.051h1.84c1.137 0 1.756.58 1.756 1.524 0 .953-.626 1.45-2.158 1.45H6.927z"/>
+    </g>
   </g>
 
-  <!-- Real Ethereum logomark (official brand shape) -->
+  <!-- Ethereum logomark -->
   <g id="logo-eth" viewBox="0 0 64 64">
     <circle cx="32" cy="32" r="32" fill="#292643"/>
     <path fill="#fff" d="M32 11.5v14.9l12.6 5.6z" opacity="0.65"/>
@@ -274,86 +255,87 @@ button{ font-family:inherit; border:none; background:none; color:inherit; cursor
 </defs>
 </svg>
 
-<div class="device">
-  <div class="app-shell" id="appShell">
+<div id="appRoot">
 
-    <!-- SPLASH -->
-    <div id="splash">
-      <svg class="logo-mark" viewBox="0 0 100 100"><use href="#logo-orbit"/></svg>
-      <div class="brand">nova<span>wallet</span></div>
-      <div class="tag">Non&#8209;custodial</div>
-    </div>
-
-    <!-- LANDING -->
-    <div class="landing" id="landing">
-      <div class="landing-bg">
-        <svg viewBox="0 0 400 844" preserveAspectRatio="xMidYMid slice" width="100%" height="100%">
-          <defs>
-            <filter id="wblur"><feGaussianBlur stdDeviation="34"/></filter>
-            <radialGradient id="wrg1"><stop offset="0" stop-color="#4cd9ff" stop-opacity="0.22"/><stop offset="1" stop-color="#4cd9ff" stop-opacity="0"/></radialGradient>
-            <radialGradient id="wrg2"><stop offset="0" stop-color="#6c63ff" stop-opacity="0.2"/><stop offset="1" stop-color="#6c63ff" stop-opacity="0"/></radialGradient>
-          </defs>
-          <g filter="url(#wblur)">
-            <circle cx="60" cy="120" r="130" fill="url(#wrg1)"><animate attributeName="cy" values="120;180;120" dur="10s" repeatCount="indefinite"/></circle>
-            <circle cx="360" cy="640" r="160" fill="url(#wrg2)"><animate attributeName="cx" values="360;300;360" dur="12s" repeatCount="indefinite"/></circle>
-          </g>
-        </svg>
-      </div>
-
-      <div class="brand-row pop pop-d1">
-        <svg class="logo-mark" viewBox="0 0 100 100"><use href="#logo-orbit"/></svg>
-        <div class="name">nova<span>wallet</span></div>
-      </div>
-
-      <div class="hero-badge pop pop-d2"><span class="dot"></span> One wallet, every chain</div>
-
-      <!-- signature orbit hub with real crypto marks -->
-      <div class="orbit-hub pop pop-d3">
-        <svg class="orbit-ring" viewBox="0 0 232 232">
-          <circle cx="116" cy="116" r="109" fill="none" stroke="rgba(140,175,255,0.14)" stroke-width="1" stroke-dasharray="2 6"/>
-          <circle cx="116" cy="116" r="79" fill="none" stroke="rgba(140,175,255,0.12)" stroke-width="1" stroke-dasharray="2 6"/>
-          <circle cx="116" cy="116" r="39" fill="none" stroke="rgba(140,175,255,0.16)" stroke-width="1" stroke-dasharray="2 5"/>
-        </svg>
-
-        <div class="orbit-hub-core"><svg viewBox="0 0 100 100"><use href="#logo-orbit"/></svg></div>
-
-        <div class="coin-slot c-ton"><div class="coin"><svg viewBox="0 0 56 56"><use href="#logo-ton"/></svg></div></div>
-        <div class="coin-slot c-btc"><div class="coin"><svg viewBox="0 0 64 64"><use href="#logo-btc"/></svg></div></div>
-        <div class="coin-slot c-eth"><div class="coin"><svg viewBox="0 0 64 64"><use href="#logo-eth"/></svg></div></div>
-      </div>
-
-      <div class="hero-text pop pop-d4">
-        <h1>Meet <span>Nova Wallet</span></h1>
-        <p class="tagline">Your keys, your crypto, your control — send, receive and grow your assets without ever leaving Telegram.</p>
-      </div>
-
-      <div class="feature-stack">
-        <div class="feature-card pop pop-d5">
-          <div class="fc-icon"><svg><use href="#ico-shield"/></svg></div>
-          <div class="fc-text"><div class="t">Bank-grade security</div><div class="s">Your recovery phrase never leaves your device</div></div>
-        </div>
-        <div class="feature-card pop pop-d6">
-          <div class="fc-icon"><svg><use href="#ico-swap"/></svg></div>
-          <div class="fc-text"><div class="t">Multi-chain by default</div><div class="s">TON, Bitcoin, Ethereum &amp; more in one place</div></div>
-        </div>
-        <div class="feature-card pop pop-d7">
-          <div class="fc-icon"><svg><use href="#ico-send"/></svg></div>
-          <div class="fc-text"><div class="t">Instant transfers</div><div class="s">Send to any @username on Telegram in seconds</div></div>
-        </div>
-      </div>
-
-      <div class="landing-actions pop pop-d8">
-        <button class="open-wallet-btn" onclick="handleOpenWallet()">
-          <svg><use href="#ico-wallet"/></svg><span>Open Wallet</span>
-        </button>
-      </div>
-    </div>
-
-    <div class="toast" id="toast"><span id="toastText"></span></div>
+  <!-- SPLASH -->
+  <div id="splash">
+    <svg class="logo-mark" viewBox="0 0 100 100"><use href="#logo-orbit"/></svg>
+    <div class="brand">nova<span>wallet</span></div>
+    <div class="tag">Non&#8209;custodial</div>
   </div>
+
+  <!-- LANDING -->
+  <div class="landing" id="landing">
+    <div class="landing-bg">
+      <svg viewBox="0 0 400 844" preserveAspectRatio="xMidYMid slice" width="100%" height="100%">
+        <defs>
+          <filter id="wblur"><feGaussianBlur stdDeviation="34"/></filter>
+          <radialGradient id="wrg1"><stop offset="0" stop-color="#4cd9ff" stop-opacity="0.18"/><stop offset="1" stop-color="#4cd9ff" stop-opacity="0"/></radialGradient>
+          <radialGradient id="wrg2"><stop offset="0" stop-color="#6c63ff" stop-opacity="0.16"/><stop offset="1" stop-color="#6c63ff" stop-opacity="0"/></radialGradient>
+        </defs>
+        <g filter="url(#wblur)">
+          <circle cx="60" cy="120" r="130" fill="url(#wrg1)"><animate attributeName="cy" values="120;180;120" dur="10s" repeatCount="indefinite"/></circle>
+          <circle cx="360" cy="640" r="160" fill="url(#wrg2)"><animate attributeName="cx" values="360;300;360" dur="12s" repeatCount="indefinite"/></circle>
+        </g>
+      </svg>
+    </div>
+
+    <div class="brand-row pop pop-d1">
+      <svg class="logo-mark" viewBox="0 0 100 100"><use href="#logo-orbit"/></svg>
+      <div class="name">nova<span>wallet</span></div>
+    </div>
+
+    <div class="hero-badge pop pop-d2"><span class="dot"></span> One wallet, every chain</div>
+
+    <!-- signature coin row with real crypto marks — simple flex row, cannot overlap other content -->
+    <div class="coin-row pop pop-d3">
+      <div class="coin-badge b-gram"><svg viewBox="0 0 56 56"><use href="#logo-gram"/></svg></div>
+      <div class="coin-badge b-btc"><svg viewBox="0 0 64 64"><use href="#logo-btc"/></svg></div>
+      <div class="coin-badge b-eth"><svg viewBox="0 0 64 64"><use href="#logo-eth"/></svg></div>
+    </div>
+
+    <div class="hero-text pop pop-d4">
+      <h1>Meet <span>Nova Wallet</span></h1>
+      <p class="tagline">Your keys, your crypto, your control — send, receive and grow your assets without ever leaving Telegram.</p>
+    </div>
+
+    <div class="feature-stack">
+      <div class="feature-card pop pop-d5">
+        <div class="fc-icon"><svg><use href="#ico-shield"/></svg></div>
+        <div class="fc-text"><div class="t">Bank-grade security</div><div class="s">Your recovery phrase never leaves your device</div></div>
+      </div>
+      <div class="feature-card pop pop-d6">
+        <div class="fc-icon"><svg><use href="#ico-swap"/></svg></div>
+        <div class="fc-text"><div class="t">Multi-chain by default</div><div class="s">Gram, Bitcoin, Ethereum &amp; more in one place</div></div>
+      </div>
+      <div class="feature-card pop pop-d7">
+        <div class="fc-icon"><svg><use href="#ico-send"/></svg></div>
+        <div class="fc-text"><div class="t">Instant transfers</div><div class="s">Send to any @username on Telegram in seconds</div></div>
+      </div>
+    </div>
+
+    <div class="landing-actions pop pop-d8">
+      <button class="open-wallet-btn" onclick="handleOpenWallet()">
+        <svg><use href="#ico-wallet"/></svg><span>Open Wallet</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"><span id="toastText"></span></div>
 </div>
 
 <script>
+// Native Telegram Mini App sizing — makes the page fill the real WebView
+// instead of guessing a fixed device size.
+(function initTelegram(){
+  if (window.Telegram && window.Telegram.WebApp) {
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+    if (tg.disableVerticalSwipes) tg.disableVerticalSwipes();
+  }
+})();
+
 setTimeout(() => { document.getElementById('splash').classList.add('hide'); }, 1200);
 
 function handleOpenWallet(){
